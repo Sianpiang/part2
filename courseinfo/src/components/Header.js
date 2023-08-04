@@ -1,8 +1,10 @@
 import React from 'react'
 
-const Header = ({header,id}) => {
+const Header = ({title}) => {
   return (
-    <h1 key={id}>{header}</h1>
+    <h2>
+      {title}
+    </h2>
   )
 }
 
