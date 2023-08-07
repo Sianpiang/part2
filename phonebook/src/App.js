@@ -15,19 +15,33 @@ const App = () => {
     }
     fetchPersons();
   },[])
-  const handleSubmit = (e)=>{
+  const handleSubmit = async(e)=>{
     e.preventDefault();
-    const Isthere = persons.find((person)=>person.name===newName?true:false);
+    const Isthere = persons.find((person)=>person.name.toLowerCase()===newName.toLowerCase()?true:false);
+    const newPerson = {name:newName,number:newNum}
     if(!Isthere){
-    setPersons(persons.concat({name:newName,number:newNum}))
+    const addPerson = await axios.post("http://localhost:3001/persons",newPerson);
+    setPersons(persons.concat(addPerson.data));
     setNewName("")
     setNewNum("")
     }
     else{
-      alert(`${newName} is already added to phonebook`)
+      const change =window.confirm(`${newName} is already added to phonebook,change the old number to new number?`);
+      const id = persons.find(person=>person.name.toLowerCase()===newName.toLowerCase())
+      if(change){
+        const item = persons.find(person=>person.id===id.id);
+        const newItem = {...item,number:newNum};
+        const changeNo = await axios.put(`http://localhost:3001/persons/${id.id}`,newItem);
+        setPersons(persons.map(person=>person.id!==id.id?person:changeNo.data))
+      }
       setNewName("")
       setNewNum("")
     }
+  }
+  const handleDelete=async(id)=>{
+    const item = persons.find(person=>person.id===id);
+    const deleteItem = await axios.delete(`http://localhost:3001/persons/${id}`,item);
+    setPersons(persons.filter(person=>person.id!==id));
   }
   return (
     <div>
@@ -45,7 +59,8 @@ const App = () => {
       />
       <h2>Numbers</h2>
       <Display
-        person={persons.filter(person=>person.name.toLowerCase().includes(search.toLowerCase()))}
+        person={persons.filter(p=>p.name.toLowerCase().includes(search.toLowerCase()))}
+        handleDelete={handleDelete}
       />
     </div>
   )
